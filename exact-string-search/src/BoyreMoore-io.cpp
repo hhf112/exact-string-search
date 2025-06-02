@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "BoyreMoore.h"
+#include "../BoyreMoore.h"
 void BoyreMoore::startStream(int chnk, const std::string &p) {
   path = p;
   chunkSize = chnk;

@@ -1,5 +1,5 @@
 
-#include "BoyreMoore.h"
+#include "../BoyreMoore.h"
 
 #include <string>
 #include <vector>

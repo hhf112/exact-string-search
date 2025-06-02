@@ -1,0 +1,1 @@
+g++ src/BoyreMoore.cpp src/BoyreMoore-search.cpp src/BoyreMoore-io.cpp main.cpp -o  search

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "BoyreMoore.h"
+#include "../BoyreMoore.h"
 
 using namespace std;
 using namespace std::chrono;
