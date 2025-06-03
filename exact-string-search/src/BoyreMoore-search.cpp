@@ -2,6 +2,8 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "../BoyreMoore.h"
@@ -33,25 +35,6 @@ void BoyreMoore::search(const string &text, const string &pat,
   }
 }
 
-vector<int> BoyreMoore::find(int chunkSize, const string &path,
-                             const string &pattern) {
-  startStream(chunkSize, path);
-
-  vector<int> res;
-  size_t startIndex = 0;
-  forStream(pattern.length(), [&](const std::string &buf) {
-    vector<int> temp;
-    search(
-        buf, pattern, [&](int s) { temp.push_back(s); }, 0, buf.length(),
-        startIndex);
-    res.reserve(res.size() + temp.size());
-    res.insert(res.end(), temp.begin(), temp.end());
-    startIndex += chunkSize - pattern.length();
-  });
-
-  return res;
-}
-
 vector<int> BoyreMoore::parallelSearch(const string &text,
                                        const string &pattern,
                                        size_t startIndex) {
@@ -77,7 +60,8 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
     threads[i] = thread([&, i]() {
       search(
           text, pattern, [&](size_t s) { results[i].push_back(s); }, i * part,
-          min((i + 1) * part + patlen, textlen), startIndex);
+          (i == numThreads - 1 ? textlen : (i + 1) * part + patlen - 1),
+          startIndex);
     });
   }
 
@@ -96,6 +80,25 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
   return unprocessed;
 }
 
+vector<int> BoyreMoore::find(int chunkSize, const string &path,
+                             const string &pattern) {
+  startStream(chunkSize, path);
+
+  vector<int> res;
+  size_t startIndex = 0;
+  forStream(pattern.length(), [&](const std::string &buf) {
+    vector<int> temp;
+    search(
+        buf, pattern, [&](int s) { temp.push_back(s); }, 0, buf.length(),
+        startIndex);
+    res.reserve(res.size() + temp.size());
+    res.insert(res.end(), temp.begin(), temp.end());
+    startIndex += chunkSize - pattern.length() + 1;
+  });
+
+  return res;
+}
+
 vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
                               const string &pattern) {
   startStream(chunkSize, path);
@@ -104,15 +107,14 @@ vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
   size_t startIndex = 0;
   forStream(pattern.length(), [&](const std::string &buf) {
     vector<int> temp(parallelSearch(buf, pattern, startIndex));
+
     size_t needed = temp.size() + res.size();
     if (needed > res.capacity()) {
-      size_t newCap = max(res.capacity() * 2, needed);
-      res.reserve(newCap);
+      res.reserve(max(res.capacity() * 2, needed));
     }
-    res.insert(res.end(), temp.begin(), temp.end());
-    startIndex += chunkSize - pattern.length();
 
-    // for (auto& x: temp) cout << buf.substr(x - startIndex, 6) << '\n';
+    res.insert(res.end(), temp.begin(), temp.end());
+    startIndex += chunkSize - pattern.length() + 1;
   });
 
   return res;
@@ -126,13 +128,10 @@ vector<int> BoyreMoore::pfind_unique(int chunkSize, const string &path,
   size_t startIndex = 0;
   forStream(pattern.length(), [&](const std::string &buf) {
     vector<int> temp(parallelSearch(buf, pattern, startIndex));
-    size_t needed = temp.size() + res.size();
-    if (needed > res.capacity()) {
-      size_t newCap = max(res.capacity() * 2, needed);
-      res.reserve(newCap);
-    }
+
+    res.reserve(res.size() + temp.size());
     res.insert(res.end(), temp.begin(), temp.end());
-    startIndex += chunkSize - pattern.length();
+    startIndex += chunkSize - pattern.length() + 1;
   });
 
   std::sort(res.begin(), res.end());

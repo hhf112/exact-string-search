@@ -44,10 +44,17 @@ private:
   std::string getPath() { return path; }
 
 public:
+  //Runs the classical Boyre Moore Search on chunks of the file and returns an ordered 
+  //and unique value vector of found indexes where the pattern starts.
   std::vector<int> find(int chunkSize, const std::string &path,
                         const std::string &pattern);
+
+  //Parallelizes classical Boyre Moore on partitions of chunks of the file and returns 
+  //a possibly unordered vector with duplicate entires.
   std::vector<int> pfind(int chunkSize, const std::string &path,
                          const std::string &pattern);
+
+  //runs pfind but sorts and deduplicates the result with added overhead.
   std::vector<int> pfind_unique(int chunkSize, const std::string &path,
                                 const std::string &pattern);
 

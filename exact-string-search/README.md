@@ -15,13 +15,13 @@ for the benchmark run: <br>
 #### Sample Output:
 
 ```
-chunksize: 50 MB(s).
-classical search function pfind: 1412 ms.
+chunksize: 52428800 byte(s).
+classical search function find: 5036 ms.
 found: 4032985
-parallel search function pfind: 733 ms.
-found: 4032983
-parallel search function pfind_unique: 866 ms.
-found: 4032983
+parallel search function pfind: 1111 ms.
+found: 4032979
+parallel search function pfind_unique: 1245 ms.
+found: 4032979
 ```
 
 # Documentation 

@@ -1,1 +1,1 @@
-g++ src/BoyreMoore.cpp src/BoyreMoore-search.cpp src/BoyreMoore-io.cpp benchmark.cpp -o  search
+g++ -std=c++17 -pthread src/BoyreMoore.cpp src/BoyreMoore-search.cpp src/BoyreMoore-io.cpp benchmark.cpp -o search
