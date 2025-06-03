@@ -1,6 +1,3 @@
-PS. there are some issues where the parallel find function is missing a few results due to search space overlapping, but aside from the few it is fully functional on a large scale.
-
-I am working on fixing it.
 
 # Parallelized Boyre Moore Search
 A header only library for parallelized exact string searching using the classical Boyre Moore Algorithm.

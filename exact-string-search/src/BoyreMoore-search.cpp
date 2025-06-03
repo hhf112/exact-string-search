@@ -45,7 +45,7 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
     return {};
   }
   size_t part = (textlen / std::thread::hardware_concurrency());
-  if (part < 1) {
+  if (part <= patlen - 1) {
     std::cerr << "input length too small. Consider using classic search.\n";
     return {};
   }
@@ -58,8 +58,7 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
     threads[i] = thread([&, i]() {
       search(
           text, pattern, [&](size_t s) { results[i].push_back(s); }, i * part,
-          (i == numThreads - 1 ? textlen : (i + 1) * part + patlen - 1),
-          startIndex);
+          min((i + 1) * part + patlen - 1, textlen), startIndex);
     });
   }
 
