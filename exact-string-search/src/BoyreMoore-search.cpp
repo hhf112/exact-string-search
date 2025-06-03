@@ -79,7 +79,7 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
 
 vector<int> BoyreMoore::find(int chunkSize, const string &path,
                              const string &pattern) {
-  startStream(chunkSize, path);
+  if (startStream(chunkSize, path) == 1) return {}; 
 
   vector<int> res;
   size_t startIndex = 0;
@@ -98,7 +98,7 @@ vector<int> BoyreMoore::find(int chunkSize, const string &path,
 
 vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
                               const string &pattern) {
-  startStream(chunkSize, path);
+  if (startStream(chunkSize, path) == 1) return {};
 
   vector<int> res;
   size_t startIndex = 0;
@@ -119,7 +119,7 @@ vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
 
 vector<int> BoyreMoore::pfind_unique(int chunkSize, const string &path,
                                      const string &pattern) {
-  startStream(chunkSize, path);
+  if (startStream(chunkSize, path) == 1) return {}; 
 
   vector<int> res;
   size_t startIndex = 0;

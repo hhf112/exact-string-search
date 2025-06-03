@@ -29,6 +29,118 @@ found: 2516583
 # Documentation 
 check BoyreMoore.h for concise comments  on every functionality.
 
+## Constructor
+```
+BoyreMoore(int nchars) : nchars{nchars} { badchar.resize(nchars, -1); };
+```
+Initializes badchar with the possible bad chars in the search. refer  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
+## Return value Search
+all functions return an empty vector on unable to start file stream.
+## Non parallel search
+### find:
+```
+std::vector<int> find(int chunkSize, const std::string &path,
+                        const std::string &pattern);
+```    
+starts a filestream using `void startStream(int chunkSize, const std::string &path)` with specified chunk size. 
+calls the forStream function 
+```
+  void forStream(size_t patternlen,
+                 const std::function<void(const std::string &)> &action);
+
+```
+and passes the classical Boyre Moore Search as a function pointer
+```  
+void search(const std::string &text, const std::string &pat,
+            const std::function<void(int)> &foreach, int l, int r,
+            size_t startIndex);
+```
+for the complete range of the chunk on each chunk. Stores results in a temporary vector.  Concatenates all results in the result vector.
+
+## Parallel find alternatives
+```
+  std::vector<int> pfind(int chunkSize, const std::string &path,
+                         const std::string &pattern);
+
+  //runs pfind but sorts and deduplicates the result with added overhead.
+  std::vector<int> pfind_unique(int chunkSize, const std::string &path,
+                                const std::string &pattern);
+
+```
+
+### pfind
+```
+  std::vector<int> pfind(int chunkSize, const std::string &path,
+                         const std::string &pattern);
+```
+starts a file stream using 
+`
+void startStream(int chunkSize, const std::string &path)
+`. 
+ Calls forStream
+ `
+ void forStream(size_t patternlen,
+                 const std::function<void(const std::string &)> &action)
+`
+and passes the following breakdown of a function pointer as action:<br>
+A temporary vector initialized with the  parallel search function 
+`
+  std::vector<int> parallelSearch(const std::string &text,
+                                  const std::string &pattern,
+                                  size_t startIndex);
+`then concatenates the temp vector into the result vector after processing every chunk.
+
+### pfind_unique
+```
+std::vector<int> pfind_unique(int chunkSize, const std::string &path,
+                                const std::string &pattern);
+```
+first does the same task as 
+`
+std::vector<int> pfind(int chunkSize, const std::string &path,
+                         const std::string &pattern);
+`
+after concatenating all temp vectors into result vector, calls `std::sort` and `std::unique` followed by `std::erase` on the final result vector.
+
+## Search Functions
+### search
+```
+void search(const std::string &text, const std::string &pat,
+              const std::function<void(int)> &foreach, int l, int r,
+              size_t startIndex);
+
+```
+performs classical Boyre Moore Search. Shifts the pattern by the maxium of the preprocessed lengths from Bad Character Heuristic  `std::vector<int> badchar` & the Good Suffix Heuristic 
+```
+// No of shifts for every index preproccessed for Good suffix heuristic
+  std::vector<int> shift;
+  // border positions preprocessed for Good suffix heuristic
+std::vector<int> bpos;
+```
+ //references for classical Boyre Moore search preprocessing: 
+    https://www.geeksforgeeks.org/boyer-moore-algorithm-good-suffix-heuristic/
+   https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 
 
+### parallelSearch
+```
+std::vector<int> parallelSearch(const std::string &text,
+                                  const std::string &pattern,
+                                  size_t startIndex);
+```
+divides text length into forward overlapped partitions based on `std::thread::hardware_concurrency()`, dispatches a thread stored in ` std::vector<std::thread> threads(numThreads);` for each partition.
+Corresponding threads push results to `std::vector<std::vector<int>> results(numThreads);`. Concatenates all results int returned vector. Returned vector may contain repetitions and may be unordered.
 
+## I/O
+### startStream
+```
+void startStream(int chunkSize, const std::string &path);
+```
+sets `int chunkSize` by the minimum of the passed value and `MAX_CHUNK_LIMIT` which is initially set to 128 MB(s). returns 1 on unsuccesful file stream. Resizes buffer to chunk size. 
+
+### forStream 
+```
+void BoyreMoore::forStream(
+    size_t patternlen, const std::function<void(const std::string &)> &action) 
+```
+A wrapper to run the `action` functor on every chunk processed. Chunks are backwards overlapped using `std::memcpy` with pattern length to avoid search misses. 

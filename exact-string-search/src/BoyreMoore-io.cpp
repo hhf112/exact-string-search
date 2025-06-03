@@ -3,22 +3,29 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "../BoyreMoore.h"
 
-#define MAX_CHUNK_LIMIT 128 *  1048576
+#define MAX_CHUNK_LIMIT 128 * 1048576
 
-void BoyreMoore::startStream(int chnk, const std::string &p) {
+int BoyreMoore::startStream(int chnk, const std::string &p) {
   path = p;
   chunkSize = std::min(chnk, MAX_CHUNK_LIMIT);
   file = std::fstream(path, std::ios::in);
 
   if (!file) {
     std::cerr << "unable to open file\n";
-    exit(1);
+    return 1;
   }
-  buffer.resize(chunkSize, 'a');
+  try {
+    buffer.resize(chunkSize, 'a');
+  } catch (std::length_error) {
+    std::cerr << "buffer length too long.\n";
+    return 1;
+  }
+  return 0;
 }
 
 void BoyreMoore::forStream(

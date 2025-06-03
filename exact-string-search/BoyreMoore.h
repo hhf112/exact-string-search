@@ -36,7 +36,7 @@ private:
   // > initializes file path.
   // > and sets chunk size to be fetched =  min (passed chunk size, 50 Mb(s)).
   // > opens file.
-  void startStream(int chunkSize, const std::string &path);
+  int startStream(int chunkSize, const std::string &path);
 
   //> reads chunks overlapping by patternlength to avoid search misses.
   //> runs action for each chunk.
