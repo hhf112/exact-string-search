@@ -34,7 +34,7 @@ check BoyreMoore.h for concise comments  on every functionality.
 BoyreMoore(int nchars) : nchars{nchars} { badchar.resize(nchars, -1); };
 ```
 Initializes badchar with the possible bad chars in the search. refer  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
-## Return value Search
+## Vector returning search
 all functions return an empty vector on unable to start file stream.
 ## Non parallel search
 ### find:
@@ -110,7 +110,7 @@ void search(const std::string &text, const std::string &pat,
               size_t startIndex);
 
 ```
-performs classical Boyre Moore Search. Shifts the pattern by the maxium of the preprocessed lengths from Bad Character Heuristic  `std::vector<int> badchar` & the Good Suffix Heuristic 
+performs classical Boyre Moore Search. Shifts the pattern by the maxium of the preprocessed lengths from Bad Character Heuristic  `std::vector<int> badchar` & the Good Suffix Heuristic. runs foreach for each pattern found.
 ```
 // No of shifts for every index preproccessed for Good suffix heuristic
   std::vector<int> shift;
