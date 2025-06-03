@@ -11,7 +11,7 @@ a simple bash build script (build) is attached to avoid the hassle of object fil
 
 # Benchmark run 
 for the benchmark run: <br>
-`./search <filename> <pattern> <chunksize in mbs preferably >= 50>`
+`./search <filename> <pattern> <chunksize in mbs preferably >= 10>`
 
 #### Sample Usage:
 
