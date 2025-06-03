@@ -117,7 +117,7 @@ performs classical Boyre Moore Search. Shifts the pattern by the maxium of the p
   // border positions preprocessed for Good suffix heuristic
 std::vector<int> bpos;
 ```
- //references for classical Boyre Moore search preprocessing: 
+ references for classical Boyre Moore search preprocessing: 
     https://www.geeksforgeeks.org/boyer-moore-algorithm-good-suffix-heuristic/
    https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 
