@@ -11,7 +11,7 @@ using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
-    std::cerr << "wrong usage\n \t try: search <filename> <pattern> <chunksize in mbs >= 50>\n";
+    std::cerr << "wrong usage\n \t try: search <filename> <pattern> <chunksize in mbs preferably >= 50>\n";
     return 1;
   }
     int chunksize;
@@ -22,10 +22,6 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    if (chunksize < 50 * 1048576) {
-        std::cerr << "chunk size too small to test parallel search. consider a larger file.\n";
-        exit(1);
-    }
 
   BoyreMoore bm(BADCHARS);
   std::string pattern(argv[2]);

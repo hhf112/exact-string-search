@@ -14,7 +14,7 @@ a simple bash build script (build) is attached to avoid the hassle of object fil
 
 # Benchmark run 
 for the benchmark run: <br>
-`./search <filename> <pattern> <chunksize in mbs >= 50>`
+`./search <filename> <pattern> <chunksize in mbs preferably >= 50>`
 
 #### Sample Output:
 
@@ -43,7 +43,7 @@ calls the forStream function
                  const std::function<void(const std::string &)> &action);
 
 ```
-which implements backwards overlapping by one off of pattern length to avoid misses. calls the classical Boyre Moore Search 
+which implements backwards overlapping by one off of pattern length to avoid misses. passes the classical Boyre Moore Search as a function pointer
 ```  
 void search(const std::string &text, const std::string &pat,
             const std::function<void(int)> &foreach, int l, int r,
