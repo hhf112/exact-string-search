@@ -10,7 +10,7 @@ a simple bash build script (build) is attached to avoid the hassle of object fil
 
 # Benchmark run 
 for the benchmark run: <br>
-`./search <filename> <pattern>`
+`./search <filename> <pattern> <chunksize in mbs >= 50>`
 
 #### Sample Output:
 
@@ -26,3 +26,7 @@ found: 4032979
 
 # Documentation 
 check BoyreMoore.h for concise comments  on every functionality.
+
+`find()`
+
+- [ ] Fix 

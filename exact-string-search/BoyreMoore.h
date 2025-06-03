@@ -13,7 +13,7 @@ private:
   const int nchars;
 
   // size per chunk of filestream in bytes.
-  int chunkSize = 50 * 1024 * 1024;
+  int chunkSize;
 
   // filepath.
   std::string path;
