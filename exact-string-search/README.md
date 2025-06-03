@@ -13,16 +13,17 @@ a simple bash build script (build) is attached to avoid the hassle of object fil
 for the benchmark run: <br>
 `./search <filename> <pattern> <chunksize in mbs preferably >= 50>`
 
-#### Sample Output:
+#### Sample Usage:
 
 ```
-chunksize: 52428800 byte(s).
-classical search function find: 5036 ms.
-found: 4032985
-parallel search function pfind: 1111 ms.
-found: 4032979
-parallel search function pfind_unique: 1245 ms.
-found: 4032979
+hrsh $(LAPTOP-HK58DTQE):/mnt/d/dev/poozle/exact-string-search$🌙 ./search 50mb.txt example 20
+chunksize: 20971520 byte(s).
+classical search function find: 818 ms.
+found: 2516583
+parallel search function pfind: 409 ms.
+found: 2516583
+parallel search function pfind_unique: 747 ms.
+found: 2516583
 ```
 
 # Documentation (to be finished soon)
