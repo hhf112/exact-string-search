@@ -1,4 +1,6 @@
-
+//reference:
+  //  https://www.geeksforgeeks.org/boyer-moore-algorithm-good-suffix-heuristic/
+  //  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 #include "../BoyreMoore.h"
 
 #include <string>

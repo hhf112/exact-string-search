@@ -26,6 +26,9 @@ private:
   std::vector<int> bpos;
   std::vector<int> badchar;
 
+  //references for classical Boyre Moore search preprocessing: 
+  //  https://www.geeksforgeeks.org/boyer-moore-algorithm-good-suffix-heuristic/
+  //  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
   void badCharHeuristic(const std::string &str, int size);
   void preprocess_strong_suffix(const std::string &pat, int m);
   void preprocess_case2(const std::string &pat, int m);
