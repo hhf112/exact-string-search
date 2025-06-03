@@ -1,5 +1,6 @@
-#include <functional>
 #include <algorithm>
+#include <functional>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -8,10 +9,9 @@
 using namespace std;
 using namespace std::chrono;
 
-// BoyreMoore search with maximum skips take between bad character heuristic and
-// good suffix heuristic.
 void BoyreMoore::search(const string &text, const string &pat,
-                        std::function<void(int)> foreach, int l, int r) {
+                        const std::function<void(int)> &foreach, int l, int r,
+                        size_t startIndex) {
   int patlen = pat.length();
   int n = text.length();
   bpos.resize(patlen + 1), shift.resize(patlen + 1);
@@ -24,7 +24,7 @@ void BoyreMoore::search(const string &text, const string &pat,
     while (j >= 0 && pat[j] == text[s + j])
       j--;
     if (j < 0) {
-      foreach (s)
+      foreach (s + startIndex)
         ;
       s += max(shift[0],
                (s + patlen < n) ? patlen - badchar[text[s + patlen]] : 1);
@@ -33,40 +33,62 @@ void BoyreMoore::search(const string &text, const string &pat,
   }
 }
 
+vector<int> BoyreMoore::find(int chunkSize, const string &path,
+                             const string &pattern) {
+  startStream(chunkSize, path);
+
+  vector<int> res;
+  size_t startIndex = 0;
+  forStream(pattern.length(), [&](const std::string &buf) {
+    vector<int> temp;
+    search(
+        buf, pattern, [&](int s) { temp.push_back(s); }, 0, buf.length(),
+        startIndex);
+    res.reserve(res.size() + temp.size());
+    res.insert(res.end(), temp.begin(), temp.end());
+    startIndex += chunkSize - pattern.length();
+  });
+
+  return res;
+}
+
 vector<int> BoyreMoore::parallelSearch(const string &text,
-                                       const string &pattern) {
+                                       const string &pattern,
+                                       size_t startIndex) {
 
   size_t textlen = text.length();
   size_t patlen = pattern.length();
 
-  // partition allocated to each thread and number of threads.
-  size_t part = min(partmul * patlen,
-                    (size_t)(textlen / std::thread::hardware_concurrency()));
+  if (!std::thread::hardware_concurrency()) {
+    std::cerr << "No threads available on system.\n";
+    return {};
+  }
+  size_t part = (textlen / std::thread::hardware_concurrency());
+  if (part < 1) {
+    std::cerr << "input length too small. Consider using classic search.\n";
+    return {};
+  }
   int numThreads = (textlen / part + bool(textlen % part));
 
   std::vector<std::thread> threads(numThreads);
   std::vector<std::vector<int>> results(numThreads);
 
-  //
   for (int i = 0; i < numThreads; i++) {
     threads[i] = thread([&, i]() {
       search(
-          // overlapped partition by pattern length.
-          text, pattern, [&](int s) { results[i].push_back(s); }, i * part,
-          min((i + 1) * part + patlen, textlen));
+          text, pattern, [&](size_t s) { results[i].push_back(s); }, i * part,
+          min((i + 1) * part + patlen, textlen), startIndex);
     });
   }
-  std::for_each(threads.begin(), threads.end(),
-                [](std::thread &th) { th.join(); });
-  //
 
-  // filter result
+  size_t tot = 0;
+  for (int i = 0; i < numThreads; i++) {
+    threads[i].join();
+    tot += results[i].size();
+  }
+
   std::vector<int> unprocessed;
-  size_t possibleTot = 0;
-  for (const auto &res : results)
-    possibleTot += res.size();
-
-  unprocessed.reserve(possibleTot);
+  unprocessed.reserve(tot);
 
   for (const auto &res : results)
     unprocessed.insert(unprocessed.end(), res.begin(), res.end());
@@ -74,32 +96,48 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
   return unprocessed;
 }
 
-vector<int> BoyreMoore::find(int chunkSize, const string &path,
-                             const string &pattern) {
+vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
+                              const string &pattern) {
   startStream(chunkSize, path);
 
   vector<int> res;
-  forStream([&](const std::string &buf) {
-    vector<int> temp(parallelSearch(buffer, pattern));
-    res.reserve(temp.size());
+  size_t startIndex = 0;
+  forStream(pattern.length(), [&](const std::string &buf) {
+    vector<int> temp(parallelSearch(buf, pattern, startIndex));
+    size_t needed = temp.size() + res.size();
+    if (needed > res.capacity()) {
+      size_t newCap = max(res.capacity() * 2, needed);
+      res.reserve(newCap);
+    }
     res.insert(res.end(), temp.begin(), temp.end());
+    startIndex += chunkSize - pattern.length();
+
+    // for (auto& x: temp) cout << buf.substr(x - startIndex, 6) << '\n';
   });
 
   return res;
 }
 
-vector<int> BoyreMoore::find_unique(int chunkSize, const string &path,
-                                    const string &pattern) {
+vector<int> BoyreMoore::pfind_unique(int chunkSize, const string &path,
+                                     const string &pattern) {
   startStream(chunkSize, path);
 
   vector<int> res;
-  forStream([&](const std::string &buf) {
-    vector<int> temp(parallelSearch(buffer, pattern));
-    sort(temp.begin(), temp.end());
-    auto en = unique(temp.begin(), temp.end());
-    res.reserve(en - temp.begin() );
+  size_t startIndex = 0;
+  forStream(pattern.length(), [&](const std::string &buf) {
+    vector<int> temp(parallelSearch(buf, pattern, startIndex));
+    size_t needed = temp.size() + res.size();
+    if (needed > res.capacity()) {
+      size_t newCap = max(res.capacity() * 2, needed);
+      res.reserve(newCap);
+    }
     res.insert(res.end(), temp.begin(), temp.end());
+    startIndex += chunkSize - pattern.length();
   });
+
+  std::sort(res.begin(), res.end());
+  auto en = std::unique(res.begin(), res.end());
+  res.erase(en, res.end());
 
   return res;
 }

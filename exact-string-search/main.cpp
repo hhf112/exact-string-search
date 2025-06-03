@@ -1,12 +1,11 @@
 #include <bits/stdc++.h>
-#include <unordered_set>
+#include <chrono>
 
 #include "BoyreMoore.h"
 using namespace std;
 
-#define CHUNKSIZE 10 * 1024
+#define CHUNKSIZE 50
 #define BADCHARS 256
-#define PARALL 20
 
 using namespace std::chrono;
 
@@ -16,30 +15,25 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  BoyreMoore bm(BADCHARS, PARALL);
-  StreamReader text(CHUNKSIZE, argv[1]);
+  BoyreMoore bm(BADCHARS);
   std::string pattern(argv[2]);
-  std::string buffer;
-  buffer.resize(CHUNKSIZE);
+  std::string filepath(argv[1]);
 
-  std::cout << "SEARCHSPACE: " << CHUNKSIZE << " byte(s)." << '\n';
-  std::vector<int> res;
+  std::cout << "chunksize: " << CHUNKSIZE << " MB(s)." << '\n';
+
   auto strt = high_resolution_clock::now();
-  text.readChunk(buffer.data());
-  bm.search(
-      buffer, pattern, [&](int ch) { res.push_back(ch); }, 0, buffer.length());
-  auto en = duration_cast<microseconds>(high_resolution_clock::now() - strt);
-
-  std::cout << "regular search function (microseconds): " << en.count() << '\n';
-  std::cout << "found: " << res.size() << '\n';
+  std::vector<int> res1(bm.find(CHUNKSIZE, filepath, pattern));
+  auto en = duration_cast<milliseconds>(high_resolution_clock::now() - strt);
+  std::cout << "regular search function (milliseconds): " << en.count() << '\n';
+  std::cout << "found: " << res1.size() << '\n';
 
   strt = high_resolution_clock::now();
-  std::unordered_set<int> temp(bm.parallelSearch(buffer, pattern));
-  en = duration_cast<microseconds>(high_resolution_clock::now() - strt);
+  std::vector<int> res2(bm.pfind(CHUNKSIZE, filepath, pattern));
+  en = duration_cast<milliseconds>(high_resolution_clock::now() - strt);
 
-  std::cout << "parallel search function (microseconds): " << en.count()
+  std::cout << "parallel search function (milliseconds): " << en.count()
             << '\n';
-  std::cout << "found: " << temp.size() << '\n';
+  std::cout << "found: " << res2.size() << '\n';
 
   return 0;
 }

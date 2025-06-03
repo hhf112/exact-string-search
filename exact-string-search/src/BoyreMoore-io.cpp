@@ -1,12 +1,17 @@
+#include <cstddef>
+#include <cstring>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
 
 #include "../BoyreMoore.h"
+
+#define MAX_CHUNK_LIMIT 128
+
 void BoyreMoore::startStream(int chnk, const std::string &p) {
   path = p;
-  chunkSize = chnk;
+  chunkSize = min(chnk, MAX_CHUNK_LIMIT) * 1048576;
   file = std::fstream(path, std::ios::in);
 
   if (!file) {
@@ -16,16 +21,20 @@ void BoyreMoore::startStream(int chnk, const std::string &p) {
   buffer.resize(chunkSize, 'a');
 }
 
-bool BoyreMoore::readChunk(char *put) {
-  if (!put)
-    file.read(buffer.data(), chunkSize);
-  else
-    file.read(put, chunkSize);
-  return !file.eof();
-}
+void BoyreMoore::forStream(
+    size_t patternlen, const std::function<void(const std::string &)> &action) {
+  if (patternlen == 0)
+    return;
+  buffer.resize(chunkSize + patternlen, 'a');
 
-void BoyreMoore::forStream(std::function<void(const std::string &)> action) {
-  while (readChunk()) {
+  if (!file.read(buffer.data(), chunkSize)) {
+    std::cerr << "failed to read from file\n";
+    return;
+  }
+
+  while (file.gcount()) {
     action(buffer);
+    std::memcpy(buffer.data(), buffer.data() + chunkSize, patternlen);
+    file.read(buffer.data() + patternlen, chunkSize);
   }
 }
