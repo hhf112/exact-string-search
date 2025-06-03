@@ -28,7 +28,7 @@ parallel search function pfind_unique: 1245 ms.
 found: 4032979
 ```
 
-# Documentation 
+# Documentation (to be finished soon)
 check BoyreMoore.h for concise comments  on every functionality.
 
 ### Non parallel find
