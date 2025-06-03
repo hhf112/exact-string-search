@@ -1,6 +1,6 @@
 
 # Parallelized Boyre Moore Search
-A header only library for parallelized exact string searching using the classical Boyre Moore Algorithm.
+A library for parallelized exact string searching using the classical Boyre Moore Algorithm.
 
 
 # Installation and benchmark build
