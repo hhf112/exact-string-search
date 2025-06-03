@@ -1,3 +1,6 @@
+//PS: I was trying to do this using Boyre moore search which turned out to be not 
+//feasible for adjusting variable skips. 
+//
 #include <bits/stdc++.h>
 #include <cctype>
 #include <ios>
