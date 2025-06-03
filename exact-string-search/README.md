@@ -35,7 +35,7 @@ BoyreMoore(int nchars) : nchars{nchars} { badchar.resize(nchars, -1); };
 ```
 Initializes badchar with the possible bad chars in the search. refer  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 ## Vector returning search
-all functions return an empty vector on unable to start file stream.
+all functions return an empty vector on being unable to open the inputted file.
 ## Non parallel search
 ### find:
 ```
