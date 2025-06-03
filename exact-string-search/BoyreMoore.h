@@ -12,8 +12,8 @@ private:
   //  No of characters to be considerd for bad character heuristic.
   const int nchars;
 
-  // size per chunk of filestream in MBs.
-  int chunkSize = 50;
+  // size per chunk of filestream in bytes.
+  int chunkSize = 50 * 1024 * 1024;
 
   // filepath.
   std::string path;

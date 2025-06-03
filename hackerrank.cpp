@@ -4,34 +4,6 @@
 using namespace std;
 
 using LL = long long int;
-// Boyre Moore exact string search.
-#define NO_OF_CHARS 256
-void badCharHeuristic(const string &str, int size, int badchar[NO_OF_CHARS]) {
-  int i;
-  for (i = 0; i < NO_OF_CHARS; i++)
-    badchar[i] = -1;
-  for (i = 0; i < size; i++)
-    badchar[(int)str[i]] = i;
-}
-
-void search(const string &txt, const string &pat, auto dothen) {
-  int m = pat.size();
-  size_t n = txt.size();
-  int badchar[NO_OF_CHARS];
-  badCharHeuristic(pat, m, badchar);
-  size_t s = 0;
-  while (s <= (n - m)) {
-    int j = m - 1;
-    while (j >= 0 && pat[j] == txt[s + j])
-      j--;
-    if (j < 0) {
-      dothen(s);
-      s += (s + m < n) ? m - badchar[(int)txt[s + m]] : 1;
-    } else
-      s += max(1, j - badchar[(int)txt[s + j]]);
-  }
-}
-
 int main() {
   bool canAdd = 1, canMul = 1;
   LL n;
@@ -40,12 +12,8 @@ int main() {
   string buf;
 
   LL res = 0;
-  auto eval = [&](const string &bf, size_t s, bool flag) {
-    if (flag == 0 && canAdd == 0)
-      return;
-    else if (flag == 1 && canMul == 0)
-      return;
-
+auto parseAndEval = [&](const string &bf, size_t &s, bool flag) {
+    s += 4;   
     string x = "0", y = "0";
     size_t len = bf.length();
     while (s < len && isdigit(bf[s]))
@@ -57,6 +25,11 @@ int main() {
         y += bf[s++];
 
       if (s < len && bf[s] == ')') {
+        ++s;
+        if (flag == 0 && canAdd == 0)
+          return;
+        else if (flag == 1 && canMul == 0)
+          return;
         res += (flag ? stoll(x) * stoll(y) : stoll(x) + stoll(y));
       }
     }
@@ -64,27 +37,29 @@ int main() {
 
   while (n--) {
     getline(cin, buf);
-    size_t len = buf.length();
 
-    search(buf, "add(", [&](size_t s) {
-      if (s + 4 < len && buf[s + 4] == ')') {
-        if (s >= 3 && buf.substr(s - 3, 3) == "do_")
-          canAdd = 1;
-        else if (s >= 6 && buf.substr(s - 6, 6) == "don't_")
-          canAdd = 0;
-      } else
-        eval(buf, s + 4, 0);
-    });
-
-    search(buf, "mul(", [&](size_t s) {
-      if (s + 4 < len && buf[s + 4] == ')') {
-        if (s >= 3 && buf.substr(s - 3, 3) == "do_")
-          canMul = 1;
-        else if (s >= 6 && buf.substr(s - 6, 6) == "don't_")
-          canMul = 0;
-      } else
-        eval(buf, s + 4, 1);
-    });
+    size_t i = 0;
+    while (i < buf.size()) {
+      if (buf.compare(i, 8, "do_add()") == 0) {
+        canAdd = true;
+        i += 8;
+      } else if (buf.compare(i, 11, "don't_add()") == 0) {
+        canAdd = false;
+        i += 11;
+      } else if (buf.compare(i, 4, "add(") == 0) {
+        parseAndEval(buf, i, 0);
+      } else if (buf.compare(i, 8, "do_mul()") == 0) {
+        canMul = true;
+        i += 8;
+      } else if (buf.compare(i, 11, "don't_mul()") == 0) {
+        canMul = false;
+        i += 11;
+      } else if (buf.compare(i, 4, "mul(") == 0) {
+        parseAndEval(buf, i, 1);
+      } else {
+        i++;
+      }
+    }
   }
 
   cout << res << '\n';
