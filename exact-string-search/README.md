@@ -27,6 +27,4 @@ found: 4032979
 # Documentation 
 check BoyreMoore.h for concise comments  on every functionality.
 
-`find()`
 
-- [ ] Fix 
