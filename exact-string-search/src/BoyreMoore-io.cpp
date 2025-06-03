@@ -11,7 +11,7 @@
 
 void BoyreMoore::startStream(int chnk, const std::string &p) {
   path = p;
-  chunkSize = min(chnk, MAX_CHUNK_LIMIT) * 1048576;
+  chunkSize = std::min(chnk, MAX_CHUNK_LIMIT) * 1048576;
   file = std::fstream(path, std::ios::in);
 
   if (!file) {

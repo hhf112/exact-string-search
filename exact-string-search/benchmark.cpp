@@ -24,16 +24,26 @@ int main(int argc, char *argv[]) {
   auto strt = high_resolution_clock::now();
   std::vector<int> res1(bm.find(CHUNKSIZE, filepath, pattern));
   auto en = duration_cast<milliseconds>(high_resolution_clock::now() - strt);
-  std::cout << "regular search function (milliseconds): " << en.count() << '\n';
+  std::cout << "classical search function pfind: " << en.count()
+            <<  " ms.\n";
   std::cout << "found: " << res1.size() << '\n';
 
   strt = high_resolution_clock::now();
   std::vector<int> res2(bm.pfind(CHUNKSIZE, filepath, pattern));
   en = duration_cast<milliseconds>(high_resolution_clock::now() - strt);
 
-  std::cout << "parallel search function (milliseconds): " << en.count()
-            << '\n';
+  std::cout << "parallel search function pfind: " << en.count()
+            <<  " ms.\n";
   std::cout << "found: " << res2.size() << '\n';
+
+
+  strt = high_resolution_clock::now();
+  std::vector<int> res3(bm.pfind(CHUNKSIZE, filepath, pattern));
+  en = duration_cast<milliseconds>(high_resolution_clock::now() - strt);
+
+  std::cout << "parallel search function pfind_unique: " << en.count()
+            <<  " ms.\n";
+  std::cout << "found: " << res3.size() << '\n';
 
   return 0;
 }
