@@ -39,10 +39,10 @@ all functions return an empty vector on being unable to open the inputted file.
 ## Non parallel search
 ### find:
 ```
-std::vector<size_t> find(int chunkSize, const std::string &path,
+std::vector<size_t> find(size_t chunkSize, const std::string &path,
                         const std::string &pattern);
 ```    
-starts a filestream using `void startStream(int chunkSize, const std::string &path)` with specified chunk size. 
+starts a filestream using `void startStream(size_t chunkSize, const std::string &path)` with specified chunk size. 
 calls the forStream function 
 `
   void forStream(size_t patternlen,
@@ -52,30 +52,30 @@ calls the forStream function
 and passes the classical Boyre Moore Search as a function pointer
 `
 void search(const std::string &text, const std::string &pat,
-            const std::function<void(int)> &foreach, int l, int r,
+            const std::function<void(size_t)> &foreach, int l, int r,
             size_t startIndex);
 `
 for the complete range of the chunk on each chunk. Stores results in a temporary vector.  Concatenates all results in the result vector.
 
 ## Parallel find alternatives
 ```
-  std::vector<size_t> pfind(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind(size_t chunkSize, const std::string &path,
                          const std::string &pattern);
 
   //runs pfind but sorts and deduplicates the result with added overhead.
-  std::vector<size_t> pfind_unique(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind_unique(size_t chunkSize, const std::string &path,
                                 const std::string &pattern);
 
 ```
 
 ### pfind
 ```
-  std::vector<size_t> pfind(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind(size_t chunkSize, const std::string &path,
                          const std::string &pattern);
 ```
 starts a file stream using 
 `
-void startStream(int chunkSize, const std::string &path)
+void startStream(size_t chunkSize, const std::string &path)
 `. 
  Calls forStream
  `
@@ -92,12 +92,12 @@ A temporary vector initialized with the  parallel search function
 
 ### pfind_unique
 ```
-std::vector<int> pfind_unique(int chunkSize, const std::string &path,
+std::vector<size_t> pfind_unique(size_t chunkSize, const std::string &path,
                                 const std::string &pattern);
 ```
 first does the same task as 
 `
-std::vector<size_t> pfind(int chunkSize, const std::string &path,
+std::vector<size_t> pfind(size_t chunkSize, const std::string &path,
                          const std::string &pattern);
 `
 after concatenating all temp vectors into result vector, calls `std::sort` and `std::unique` followed by `std::erase` on the final result vector.
@@ -106,7 +106,7 @@ after concatenating all temp vectors into result vector, calls `std::sort` and `
 ### search
 ```
 void search(const std::string &text, const std::string &pat,
-              const std::function<void(int)> &foreach, int l, int r,
+              const std::function<void(size_t)> &foreach, int l, int r,
               size_t startIndex);
 
 ```
@@ -134,7 +134,7 @@ Corresponding threads push results to `std::vector<std::vector<int>> results(num
 ## I/O
 ### startStream
 ```
-void startStream(int chunkSize, const std::string &path);
+void startStream(size_t chunkSize, const std::string &path);
 ```
 sets `int chunkSize` by the minimum of the passed value and `MAX_CHUNK_LIMIT` which is initially set to 128 MB(s). returns 1 on unsuccesful file stream. Resizes buffer to chunk size. 
 
