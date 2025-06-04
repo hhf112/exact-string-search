@@ -10,19 +10,19 @@
 
 #define MAX_CHUNK_LIMIT 128 * 1048576
 
-int BoyreMoore::startStream(int chnk, const std::string &p) {
+int BoyreMoore::startStream(size_t chnk, const std::string &p) {
   path = p;
-  chunkSize = std::min(chnk, MAX_CHUNK_LIMIT);
+  chunkSize = std::min(chnk, (size_t)MAX_CHUNK_LIMIT);
   file = std::fstream(path, std::ios::in);
 
   if (!file) {
-    std::cerr << "unable to open file\n";
+    std::cerr << "startStream: unable to open file\n";
     return 1;
   }
   try {
     buffer.resize(chunkSize, 'a');
   } catch (std::length_error) {
-    std::cerr << "buffer length too long.\n";
+    std::cerr << "startStream: unable to allocate buffer.\n";
     return 1;
   }
   return 0;
@@ -35,7 +35,7 @@ void BoyreMoore::forStream(
   buffer.resize(chunkSize + patternlen - 1, 'a');
 
   if (!file.read(buffer.data(), chunkSize + patternlen - 1)) {
-    std::cerr << "failed to read from file\n";
+    std::cerr << "forStream: failed to read from file\n";
     return;
   }
 

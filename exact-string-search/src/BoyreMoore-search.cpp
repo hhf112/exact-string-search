@@ -1,17 +1,22 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <limits.h>
 #include <string>
 #include <vector>
 
 #include "../BoyreMoore.h"
 
-using namespace std;
 using namespace std::chrono;
 
-void BoyreMoore::search(const string &text, const string &pat,
+void BoyreMoore::search(const std::string &text, const std::string &pat,
                         const std::function<void(int)> &foreach, int l, int r,
                         size_t startIndex) {
+
+  if (pat.length() > INT_MAX) {
+    std::cerr << "search: pattern length too long\n";
+    return;
+  }
   int patlen = pat.length();
   int n = text.length();
   bpos.resize(patlen + 1), shift.resize(patlen + 1);
@@ -26,40 +31,47 @@ void BoyreMoore::search(const string &text, const string &pat,
     if (j < 0) {
       foreach (s + startIndex)
         ;
-      s += max(shift[0],
-               (s + patlen < n) ? patlen - badchar[text[s + patlen]] : 1);
+      s += std::max(shift[0],
+                    (s + patlen < n) ? patlen - badchar[text[s + patlen]] : 1);
     } else
-      s += max(shift[j + 1], max(1, badchar[text[s + j]]));
+      s += std::max(shift[j + 1], std::max(1, badchar[text[s + j]]));
   }
 }
 
-vector<int> BoyreMoore::parallelSearch(const string &text,
-                                       const string &pattern,
-                                       size_t startIndex) {
+std::vector<size_t> BoyreMoore::parallelSearch(const std::string &text,
+                                               const std::string &pattern,
+                                               size_t startIndex) {
 
   size_t textlen = text.length();
+  if (pattern.length() > INT_MAX) {
+    std::cerr << "parallelSearch: pattern length too long\n";
+    return {};
+  }
   size_t patlen = pattern.length();
 
   if (!std::thread::hardware_concurrency()) {
-    std::cerr << "No threads available on system.\n";
+    std::cerr << "parallelSearch: No threads available on system.\n";
     return {};
   }
+
   size_t part = (textlen / std::thread::hardware_concurrency());
   if (part <= patlen - 1) {
-    std::cerr << "input length too small. Consider using classic search.\n";
+    std::cerr << "parallelSearch: input length too small. Consider using "
+                 "classic search.\n";
     return {};
   }
   int numThreads = (textlen / part + bool(textlen % part));
 
   std::vector<std::thread> threads(numThreads);
-  std::vector<std::vector<int>> results(numThreads);
+  std::vector<std::vector<size_t>> results(numThreads);
 
   for (int i = 0; i < numThreads; i++) {
-    threads[i] = thread([&, i]() {
+    threads[i] = std::thread([&, i]() {
       search(
           text, pattern, [&](size_t s) { results[i].push_back(s); }, i * part,
-          min((i + 1) * part + patlen - 1, textlen), startIndex);
+          std::min((i + 1) * part + patlen - 1, textlen), startIndex);
     });
+
   }
 
   size_t tot = 0;
@@ -68,7 +80,7 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
     tot += results[i].size();
   }
 
-  std::vector<int> unprocessed;
+  std::vector<size_t> unprocessed;
   unprocessed.reserve(tot);
 
   for (const auto &res : results)
@@ -77,37 +89,68 @@ vector<int> BoyreMoore::parallelSearch(const string &text,
   return unprocessed;
 }
 
-vector<int> BoyreMoore::find(int chunkSize, const string &path,
-                             const string &pattern) {
-  if (startStream(chunkSize, path) == 1) return {}; 
+std::vector<size_t> BoyreMoore::find(size_t chunkSize, const std::string &path,
+                                     const std::string &pattern) {
+  if (startStream(chunkSize, path) == 1)
+    return {};
 
-  vector<int> res;
+  if (!badchar.size()) {
+    std::cerr << "find: badchars not initialized\n";
+    return {};
+  }
+
+  if (chunkSize <= pattern.length()) {
+    std::cerr << "find: chunk size too small.\n";
+    return {};
+  }
+  if (pattern.length() > INT_MAX) {
+    std::cerr << "find: pattern length too long\n";
+    return {};
+  }
+
+  std::vector<size_t> res;
   size_t startIndex = 0;
   forStream(pattern.length(), [&](const std::string &buf) {
-    vector<int> temp;
+    std::vector<size_t> temp;
     search(
         buf, pattern, [&](int s) { temp.push_back(s); }, 0, buf.length(),
         startIndex);
     res.reserve(res.size() + temp.size());
     res.insert(res.end(), temp.begin(), temp.end());
+
     startIndex += chunkSize - pattern.length() + 1;
   });
 
   return res;
 }
 
-vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
-                              const string &pattern) {
-  if (startStream(chunkSize, path) == 1) return {};
+std::vector<size_t> BoyreMoore::pfind(size_t chunkSize, const std::string &path,
+                                      const std::string &pattern) {
 
-  vector<int> res;
+  if (!badchar.size()) {
+    std::cerr << "pfind: badchars not initialized\n";
+    return {};
+  }
+  if (startStream(chunkSize, path) == 1)
+    return {};
+  if (chunkSize <= pattern.length()) {
+    std::cerr << "pfind: chunk size too small.\n";
+    return {};
+  }
+
+  if (pattern.length() > INT_MAX) {
+    std::cerr << "pfind: pattern length too long\n";
+    return {};
+  }
+
+  std::vector<size_t> res;
   size_t startIndex = 0;
   forStream(pattern.length(), [&](const std::string &buf) {
-    vector<int> temp(parallelSearch(buf, pattern, startIndex));
+    std::vector<size_t> temp(parallelSearch(buf, pattern, startIndex));
 
     size_t needed = temp.size() + res.size();
     if (needed > res.capacity()) {
-      res.reserve(max(res.capacity() * 2, needed));
+      res.reserve(std::max(res.capacity() * 2, needed));
     }
 
     res.insert(res.end(), temp.begin(), temp.end());
@@ -117,14 +160,30 @@ vector<int> BoyreMoore::pfind(int chunkSize, const string &path,
   return res;
 }
 
-vector<int> BoyreMoore::pfind_unique(int chunkSize, const string &path,
-                                     const string &pattern) {
-  if (startStream(chunkSize, path) == 1) return {}; 
+std::vector<size_t> BoyreMoore::pfind_unique(size_t chunkSize,
+                                             const std::string &path,
+                                             const std::string &pattern) {
 
-  vector<int> res;
+  if (!badchar.size()) {
+    std::cerr << "pfind_unique: badchars not initialized\n";
+    return {};
+  }
+  if (startStream(chunkSize, path) == 1)
+    return {};
+
+  if (chunkSize <= pattern.length()) {
+    std::cerr << "pfind_unique: chunk size too small.\n";
+    return {};
+  }
+  if (pattern.length() > INT_MAX) {
+    std::cerr << "pfind_unique: pattern length too long.\n";
+    return {};
+  }
+
+  std::vector<size_t> res;
   size_t startIndex = 0;
   forStream(pattern.length(), [&](const std::string &buf) {
-    vector<int> temp(parallelSearch(buf, pattern, startIndex));
+    std::vector<size_t> temp(parallelSearch(buf, pattern, startIndex));
 
     res.reserve(res.size() + temp.size());
     res.insert(res.end(), temp.begin(), temp.end());

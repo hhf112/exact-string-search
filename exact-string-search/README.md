@@ -31,7 +31,7 @@ check BoyreMoore.h for concise comments  on every functionality.
 
 ## Constructor
 ```
-BoyreMoore(int nchars) : nchars{nchars} { badchar.resize(nchars, -1); };
+BoyreMoore(size_t nchars) : nchars{nchars} { badchar.resize(nchars, -1); };
 ```
 Initializes badchar with the possible bad chars in the search. refer  https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 ## Vector returning search
@@ -39,7 +39,7 @@ all functions return an empty vector on being unable to open the inputted file.
 ## Non parallel search
 ### find:
 ```
-std::vector<int> find(int chunkSize, const std::string &path,
+std::vector<size_t> find(int chunkSize, const std::string &path,
                         const std::string &pattern);
 ```    
 starts a filestream using `void startStream(int chunkSize, const std::string &path)` with specified chunk size. 
@@ -59,18 +59,18 @@ for the complete range of the chunk on each chunk. Stores results in a temporary
 
 ## Parallel find alternatives
 ```
-  std::vector<int> pfind(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind(int chunkSize, const std::string &path,
                          const std::string &pattern);
 
   //runs pfind but sorts and deduplicates the result with added overhead.
-  std::vector<int> pfind_unique(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind_unique(int chunkSize, const std::string &path,
                                 const std::string &pattern);
 
 ```
 
 ### pfind
 ```
-  std::vector<int> pfind(int chunkSize, const std::string &path,
+  std::vector<size_t> pfind(int chunkSize, const std::string &path,
                          const std::string &pattern);
 ```
 starts a file stream using 
@@ -85,7 +85,7 @@ void startStream(int chunkSize, const std::string &path)
 and passes the following breakdown of a function pointer as action:<br>
 A temporary vector initialized with the  parallel search function 
 `
-  std::vector<int> parallelSearch(const std::string &text,
+  std::vector<size_t> parallelSearch(const std::string &text,
                                   const std::string &pattern,
                                   size_t startIndex);
 `then concatenates the temp vector into the result vector after processing every chunk.
@@ -97,7 +97,7 @@ std::vector<int> pfind_unique(int chunkSize, const std::string &path,
 ```
 first does the same task as 
 `
-std::vector<int> pfind(int chunkSize, const std::string &path,
+std::vector<size_t> pfind(int chunkSize, const std::string &path,
                          const std::string &pattern);
 `
 after concatenating all temp vectors into result vector, calls `std::sort` and `std::unique` followed by `std::erase` on the final result vector.
@@ -124,7 +124,7 @@ std::vector<int> bpos;
 
 ### parallelSearch
 ```
-std::vector<int> parallelSearch(const std::string &text,
+std::vector<size_t> parallelSearch(const std::string &text,
                                   const std::string &pattern,
                                   size_t startIndex);
 ```
