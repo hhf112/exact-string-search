@@ -49,11 +49,11 @@ calls the forStream function
                  const std::function<void(const std::string &)> &action);`
 
 and passes the classical Boyre Moore Search as a function pointer
-`
+```
 void search(const std::string &text, const std::string &pat,
             const std::function<void(size_t)> &foreach, int l, int r,
             size_t startIndex);
-`
+```
 for the complete range of the chunk on each chunk. Stores results in a temporary vector.  Concatenates all results in the result vector.
 
 ## Parallel find alternatives
