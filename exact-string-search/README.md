@@ -1,4 +1,4 @@
-
+https://github.com/hhf112/moore-search.git an iterator ased lower level aternative I have under works.
 # Parallelized Boyre Moore Search
 A library for parallelized exact string searching using the classical Boyre Moore Algorithm.
 
